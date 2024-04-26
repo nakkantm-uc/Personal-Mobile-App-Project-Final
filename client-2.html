@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>WAPH-Change Password</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+  
+
+<script>
+    function startTime() {
+        document.getElementById('clock').innerHTML = new Date();
+        setTimeout(startTime, 500);
+    }
+    if (window.WebSocket) {
+        console.log("HTML5 WebSocket is supported");
+    } else {
+        alert("HTML5 WebSocket is not supported");
+    }
+    var myWebSocket = new WebSocket('wss://websocket-echo.com');
+    var myWebSocket = io();
+        myWebSocket.onopen = function() { 
+    	console.log('WebSocket opened'); 
+    }
+    myWebSocket.on("message",  function(msg) {
+        console.log('Received from server: '+ msg);
+        document.getElementById("receivedmessage").innerHTML += sanitizeHTML(msg) + "<br>";
+    });
+    myWebSocket.on("typing", function(msg) {
+        document.getElementById("typing").innerHTML="Someone is Typing ..... <br>";
+        setTimeout(function(){document.getElementById("typing").innerHTML="<br>";},500);
+    });
+    myWebSocket.on('disconnect', function(msg){
+    console.log(socketclient.client.conn.remoteAddress+":"+socketclient.id + '  is disconnected');
+
+  })
+    myWebSocket.onclose = function() { 
+    	console.log('WebSocket closed');
+    }
+    function doSend(msg){
+        if (myWebSocket) {
+            myWebSocket.emit("message",msg);
+            console.log('Sent to server: ' +msg);
+        }
+    }
+    function entertoSend(e){
+        //alert("keycode =" + e.keyCode);
+        if(e.keyCode==13){//enter key
+            doSend(document.getElementById("message").value);
+            document.getElementById("message").value = "";
+        }
+    }
+
+    function disconnect(msg){
+        myWebSocket.emit("disconnect",msg);
+
+    }
+
+
+    function sanitizeHTML(str){
+        var temp = document.createElement('div');
+        temp.textContent = str;
+        return temp.innerHTML;
+    }
+</script>
+</head>
+<body onload="startTime()" >
+Current time: <div id="clock" class="main"></div>
+Type message and enter to send: <input type = "text" id="message" size = "30" onkeypress="entertoSend(event)" 
+onkeyup="myWebSocket.emit('typing')" />
+<br>
+        <i class="main"class="fa fa-home ml-5" aria-hidden="true"><a href="https://waph-team11.minifacebook.com/index.php" style="color: skyblue;">Home page</a></i>
+
+
+<div class="main" id="typing"> <br> </div>
+Message from server:
+<hr>
+<div class="main" id = "receivedmessage"></div>
+
+
+</body>
+</html>
